@@ -1,10 +1,16 @@
-import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+const express = require('express');
+const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 
-export async function GET() {
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+app.use(cors());
+
+app.get('/api/data', (req, res) => {
   try {
-    const filePath = path.join(process.cwd(), '..', 'creator-distribution-funnel-sample.csv');
+    const filePath = path.join(__dirname, 'creator-distribution-funnel-sample.csv');
     const fileContent = fs.readFileSync(filePath, 'utf-8');
     
     const lines = fileContent.split('\n').filter(line => line.trim() !== '');
@@ -17,8 +23,8 @@ export async function GET() {
     let totalClicks = 0;
     let totalConversions = 0;
 
-    const platformTotals: Record<string, number> = {};
-    const cohortByDate: Record<string, { date: string, Viewers: number, Builders: number, Allocators: number }> = {};
+    const platformTotals = {};
+    const cohortByDate = {};
 
     dataLines.forEach(line => {
       const cols = line.split(',');
@@ -43,7 +49,6 @@ export async function GET() {
       platformTotals[platform] += impressions;
 
       // Cohort Trend (group by date, mapping audience to their specific metric)
-      // Using impressions as the main engagement metric for trend
       if (!cohortByDate[date]) {
         cohortByDate[date] = { date, Viewers: 0, Builders: 0, Allocators: 0 };
       }
@@ -60,7 +65,7 @@ export async function GET() {
       { stage: 'Conversions', count: totalConversions, fill: '#10b981' }
     ];
 
-    const platformColors: Record<string, string> = {
+    const platformColors = {
       'YouTube': '#ef4444',
       'TikTok': '#06b6d4',
       'Instagram': '#d946ef',
@@ -78,7 +83,7 @@ export async function GET() {
     const sortedDates = Object.keys(cohortByDate).sort();
     const cohortData = sortedDates.map(date => cohortByDate[date]);
 
-    return NextResponse.json({
+    res.json({
       funnelData,
       platformData,
       cohortData,
@@ -90,6 +95,10 @@ export async function GET() {
     });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: 'Failed to process data' }, { status: 500 });
+    res.status(500).json({ error: 'Failed to process data' });
   }
-}
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

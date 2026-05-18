@@ -1,4 +1,5 @@
 const { Builder, By, until } = require('selenium-webdriver');
+require('chromedriver');
 const chrome = require('selenium-webdriver/chrome');
 
 describe('Dashboard E2E', () => {
@@ -7,15 +8,18 @@ describe('Dashboard E2E', () => {
   beforeAll(async () => {
     // Setup ChromeDriver with options
     const options = new chrome.Options();
-    options.addArguments('--headless'); // Run in headless mode for CI/CD
+    options.addArguments('--headless=new'); // Run in headless mode for CI/CD
     options.addArguments('--no-sandbox');
     options.addArguments('--disable-dev-shm-usage');
     options.addArguments('--disable-gpu');
     options.addArguments('--window-size=1920,1080');
 
+    const service = new chrome.ServiceBuilder(require('chromedriver').path);
+
     driver = await new Builder()
       .forBrowser('chrome')
       .setChromeOptions(options)
+      .setChromeService(service)
       .build();
   });
 
@@ -45,12 +49,12 @@ describe('Dashboard E2E', () => {
     // The Funnel Chart is wrapped in a Card with a specific title.
     // Let's check for the "Audience Journey" title or the recharts container.
     const funnelTitle = await driver.wait(
-      until.elementLocated(By.xpath("//h3[contains(text(), 'Audience Journey')]")),
+      until.elementLocated(By.xpath("//h2[contains(text(), 'Distribution & Demand Funnel')]")),
       10000
     );
 
     const text = await funnelTitle.getText();
-    expect(text).toContain('Audience Journey');
+    expect(text).toContain('Distribution & Demand Funnel');
     
     // Check if recharts-wrapper exists (indicating the chart rendered)
     const chart = await driver.wait(

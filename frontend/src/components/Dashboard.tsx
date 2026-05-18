@@ -16,7 +16,7 @@ export function Dashboard() {
   } | null>(null);
 
   useEffect(() => {
-    fetch('/api/data')
+    fetch('http://localhost:5000/api/data')
       .then(res => res.json())
       .then(setData)
       .catch(console.error);
@@ -53,12 +53,21 @@ export function Dashboard() {
           </div>
           
           <div className="flex gap-3">
+            <a 
+              href="/creator-distribution-funnel-sample.csv" 
+              download 
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 font-medium rounded-lg text-sm transition-colors shadow-lg"
+            >
+              Download Sample CSV
+            </a>
             <div className="flex items-center gap-2 bg-gray-900 border border-gray-800 px-4 py-2 rounded-lg text-sm text-gray-300">
               <Filter size={16} />
               <span>Content Type: All</span>
             </div>
           </div>
         </header>
+
+
 
         {/* Top Metric Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

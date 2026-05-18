@@ -8,7 +8,7 @@ export function CohortCompare({ data }: { data: any[] }) {
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
-          <XAxis dataKey="name" stroke="#9ca3af" tickLine={false} axisLine={false} />
+          <XAxis dataKey="date" stroke="#9ca3af" tickLine={false} axisLine={false} />
           <YAxis stroke="#9ca3af" tickLine={false} axisLine={false} />
           <Tooltip 
             contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151', borderRadius: '8px', color: '#f3f4f6' }}
