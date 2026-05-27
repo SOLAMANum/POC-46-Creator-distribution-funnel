@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import csv
 import os
 
 app = FastAPI()
@@ -14,104 +13,126 @@ app.add_middleware(
 )
 
 @app.get("/api/data")
-def get_data():
-    try:
-        file_path = os.path.join(os.path.dirname(__file__), "creator-distribution-funnel-sample.csv")
-        
-        with open(file_path, "r", encoding="utf-8") as f:
-            reader = csv.reader(f)
-            header = next(reader, None)  # Skip header
-            
-            total_impressions = 0
-            total_watch_time = 0
-            total_clicks = 0
-            total_conversions = 0
-            
-            platform_totals = {}
-            cohort_by_date = {}
-            
-            for row in reader:
-                if len(row) < 10:
-                    continue
-                
-                date = row[0]
-                platform = row[2]
-                audience = row[4]
-                
-                try:
-                    impressions = int(row[5]) if row[5] else 0
-                except ValueError:
-                    impressions = 0
-                    
-                try:
-                    watch_time = int(row[6]) if row[6] else 0
-                except ValueError:
-                    watch_time = 0
-                    
-                try:
-                    clicks = int(row[8]) if row[8] else 0
-                except ValueError:
-                    clicks = 0
-                    
-                try:
-                    conversions = int(row[9]) if row[9] else 0
-                except ValueError:
-                    conversions = 0
-                    
-                # Funnel
-                total_impressions += impressions
-                total_watch_time += watch_time
-                total_clicks += clicks
-                total_conversions += conversions
-                
-                # Platform Split
-                platform_totals[platform] = platform_totals.get(platform, 0) + impressions
-                
-                # Cohort Trend
-                if date not in cohort_by_date:
-                    cohort_by_date[date] = {"date": date, "Viewers": 0, "Builders": 0, "Allocators": 0}
-                    
-                if audience == "Everyday viewers":
-                    cohort_by_date[date]["Viewers"] += impressions
-                elif audience == "Builders":
-                    cohort_by_date[date]["Builders"] += impressions
-                elif audience == "Allocators":
-                    cohort_by_date[date]["Allocators"] += impressions
-                    
-        funnel_data = [
-            {"stage": "Impressions", "count": total_impressions, "fill": "#3b82f6"},
-            {"stage": "Watch Time (hrs)", "count": total_watch_time, "fill": "#8b5cf6"},
-            {"stage": "Clicks (CTR)", "count": total_clicks, "fill": "#ec4899"},
-            {"stage": "Conversions", "count": total_conversions, "fill": "#10b981"}
-        ]
-        
-        platform_colors = {
-            "YouTube": "#ef4444",
-            "TikTok": "#06b6d4",
-            "Instagram": "#d946ef",
-            "X": "#1d4ed8",
-            "LinkedIn": "#0284c7"
+def get_border_data():
+    totals = {
+        "tradeValue24h": "$492.6M",
+        "totalTrucks24h": 24520,
+        "avgCommercialDelay": "42 min",
+        "activeCrossings": 5,
+        "viewers": 24520,  # fallback for backward-compatibility or metric cards
+        "builders": 42,
+        "allocators": 5
+    }
+
+    crossings = [
+        {
+            "id": "laredo",
+            "name": "Laredo (World Trade Bridge)",
+            "status": "Delayed",
+            "commercialDelay": 75,
+            "passengerDelay": 35,
+            "throughput24h": 8450,
+            "value24h": "$184.2M",
+            "trend": [6800, 7200, 7500, 8100, 8300, 8500, 8450],
+            "coords": { "x": 65, "y": 70 },
+            "commodities": [
+                { "name": "Automotive", "value": 40 },
+                { "name": "Electronics", "value": 30 },
+                { "name": "Machinery", "value": 20 },
+                { "name": "Agriculture", "value": 10 }
+            ]
+        },
+        {
+            "id": "elpaso",
+            "name": "El Paso (Ysleta)",
+            "status": "Normal",
+            "commercialDelay": 20,
+            "passengerDelay": 15,
+            "throughput24h": 4820,
+            "value24h": "$98.5M",
+            "trend": [4500, 4600, 4700, 4650, 4800, 4750, 4820],
+            "coords": { "x": 45, "y": 42 },
+            "commodities": [
+                { "name": "Electronics", "value": 45 },
+                { "name": "Automotive", "value": 25 },
+                { "name": "Machinery", "value": 15 },
+                { "name": "Textiles", "value": 15 }
+            ]
+        },
+        {
+            "id": "otay",
+            "name": "Otay Mesa (San Diego)",
+            "status": "Congested",
+            "commercialDelay": 110,
+            "passengerDelay": 55,
+            "throughput24h": 3950,
+            "value24h": "$81.4M",
+            "trend": [3500, 3600, 3850, 3900, 3700, 3800, 3950],
+            "coords": { "x": 15, "y": 15 },
+            "commodities": [
+                { "name": "Electronics", "value": 55 },
+                { "name": "Agriculture", "value": 20 },
+                { "name": "Textiles", "value": 15 },
+                { "name": "Automotive", "value": 10 }
+            ]
+        },
+        {
+            "id": "nogales",
+            "name": "Nogales (Mariposa)",
+            "status": "Normal",
+            "commercialDelay": 15,
+            "passengerDelay": 10,
+            "throughput24h": 3150,
+            "value24h": "$64.3M",
+            "trend": [3000, 3050, 3100, 3120, 2900, 3000, 3150],
+            "coords": { "x": 30, "y": 30 },
+            "commodities": [
+                { "name": "Agriculture", "value": 60 },
+                { "name": "Automotive", "value": 15 },
+                { "name": "Machinery", "value": 15 },
+                { "name": "Electronics", "value": 10 }
+            ]
+        },
+        {
+            "id": "brownsville",
+            "name": "Brownsville (Veterans)",
+            "status": "Normal",
+            "commercialDelay": 25,
+            "passengerDelay": 20,
+            "throughput24h": 4150,
+            "value24h": "$64.2M",
+            "trend": [3800, 3900, 4000, 4050, 4100, 4200, 4150],
+            "coords": { "x": 75, "y": 85 },
+            "commodities": [
+                { "name": "Machinery", "value": 35 },
+                { "name": "Agriculture", "value": 25 },
+                { "name": "Automotive", "value": 20 },
+                { "name": "Textiles", "value": 20 }
+            ]
         }
-        
-        platform_data = [
-            {"name": name, "value": count, "fill": platform_colors.get(name, "#64748b")}
-            for name, count in platform_totals.items()
-        ]
-        
-        # Sort dates
-        sorted_dates = sorted(cohort_by_date.keys())
-        cohort_data = [cohort_by_date[d] for d in sorted_dates]
-        
-        return {
-            "funnelData": funnel_data,
-            "platformData": platform_data,
-            "cohortData": cohort_data,
-            "totals": {
-                "viewers": total_impressions,
-                "builders": total_clicks,
-                "allocators": total_conversions
-            }
-        }
-    except Exception as e:
-        print(e)
-        return {"error": "Failed to process data"}
+    ]
+
+    global_commodities = [
+        { "name": "Electronics", "value": 185.0, "fill": "#3b82f6" },
+        { "name": "Automotive", "value": 132.0, "fill": "#8b5cf6" },
+        { "name": "Machinery", "value": 88.5, "fill": "#ec4899" },
+        { "name": "Agriculture", "value": 54.2, "fill": "#10b981" },
+        { "name": "Textiles", "value": 32.9, "fill": "#eab308" }
+    ]
+
+    historical_trends = [
+        { "day": "Mon", "throughput": 21500, "delay": 35 },
+        { "day": "Tue", "throughput": 22400, "delay": 38 },
+        { "day": "Wed", "throughput": 23800, "delay": 42 },
+        { "day": "Thu", "throughput": 24100, "delay": 45 },
+        { "day": "Fri", "throughput": 24600, "delay": 41 },
+        { "day": "Sat", "throughput": 23900, "delay": 39 },
+        { "day": "Sun", "throughput": 24520, "delay": 42 }
+    ]
+
+    return {
+        "totals": totals,
+        "crossings": crossings,
+        "globalCommodities": global_commodities,
+        "historicalTrends": historical_trends
+    }

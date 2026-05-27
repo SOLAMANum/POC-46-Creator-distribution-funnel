@@ -1,24 +1,59 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FunnelChart } from "./FunnelChart";
-import { PlatformSplit } from "./PlatformSplit";
-import { CohortCompare } from "./CohortCompare";
-import { Filter, Users, Eye, ArrowRightCircle, Loader2, Info } from "lucide-react";
+import { BorderMap } from "./BorderMap";
+import { CrossingCompare } from "./CrossingCompare";
+import { CommodityFlows } from "./CommodityFlows";
+import { HistoricalTrends } from "./HistoricalTrends";
+import { 
+  Filter, 
+  MapPin, 
+  Clock, 
+  Truck, 
+  TrendingUp, 
+  Loader2, 
+  ShieldAlert, 
+  BadgeDollarSign, 
+  Activity,
+  AlertCircle,
+  FileSpreadsheet
+} from "lucide-react";
+
+interface Crossing {
+  id: string;
+  name: string;
+  status: string;
+  commercialDelay: number;
+  passengerDelay: number;
+  throughput24h: number;
+  value24h: string;
+  trend: number[];
+  coords: { x: number; y: number };
+  commodities: { name: string; value: number }[];
+}
+
+interface DashboardData {
+  totals: {
+    tradeValue24h: string;
+    totalTrucks24h: number;
+    avgCommercialDelay: string;
+    activeCrossings: number;
+  };
+  crossings: Crossing[];
+  globalCommodities: any[];
+  historicalTrends: any[];
+}
 
 export function Dashboard() {
-  const [activeStage, setActiveStage] = useState<string>("Impressions");
-  const [data, setData] = useState<{
-    funnelData: any[];
-    platformData: any[];
-    cohortData: any[];
-    totals: { viewers: number; builders: number; allocators: number };
-  } | null>(null);
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [selectedId, setSelectedId] = useState<string>("laredo");
 
   useEffect(() => {
     fetch('http://localhost:5000/api/data')
       .then(res => res.json())
-      .then(setData)
+      .then((resData) => {
+        setData(resData);
+      })
       .catch(console.error);
   }, []);
 
@@ -30,8 +65,38 @@ export function Dashboard() {
     );
   }
 
+  const selectedCrossing = data.crossings.find(c => c.id === selectedId) || data.crossings[0];
+
+  // Helper for status classes
+  const getStatusClass = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "normal":
+        return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+      case "delayed":
+        return "text-amber-400 bg-amber-500/10 border-amber-500/20";
+      case "congested":
+        return "text-rose-400 bg-rose-500/10 border-rose-500/20 animate-pulse";
+      default:
+        return "text-gray-400 bg-gray-500/10 border-gray-500/20";
+    }
+  };
+
+  // Helper for status background indicator dots
+  const getStatusDot = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "normal":
+        return "bg-emerald-500";
+      case "delayed":
+        return "bg-amber-500";
+      case "congested":
+        return "bg-rose-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  // Format large truck count
   const formatNum = (num: number) => {
-    if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
     if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
     return num.toString();
   };
@@ -43,54 +108,55 @@ export function Dashboard() {
         {/* Header section */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-800 pb-6 gap-4">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-              Creator Distribution Funnel
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-emerald-500 bg-clip-text text-transparent">
+              Border Crossing Trade & Logistics Analytics
             </h1>
             <p className="text-gray-400 mt-2 max-w-2xl">
-              Real Rails Intelligence Library. Monitor the core rail of <span className="text-white font-medium">Distribution & Demand</span>. 
-              Track engagement from everyday viewers to dedicated builders and allocators.
+              Real-time monitor of port transit delays, commercial trade values, vehicle throughputs, 
+              and commodity splits along key border crossings.
             </p>
           </div>
           
           <div className="flex gap-3">
-            <a 
-              href="/creator-distribution-funnel-sample.csv" 
-              download 
+            <button 
+              onClick={() => {
+                // Quick export placeholder or download logic
+                alert("Exporting border logistics report...");
+              }}
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 font-medium rounded-lg text-sm transition-colors shadow-lg"
             >
-              Download Sample CSV
-            </a>
+              <FileSpreadsheet size={16} />
+              Export Logistics CSV
+            </button>
             <div className="flex items-center gap-2 bg-gray-900 border border-gray-800 px-4 py-2 rounded-lg text-sm text-gray-300">
               <Filter size={16} />
-              <span>Content Type: All</span>
+              <span>Sectors: All Ports</span>
             </div>
           </div>
         </header>
 
-
-
         {/* Top Metric Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <MetricCard 
-            title="Everyday Viewers (Impressions)" 
-            value={formatNum(data.totals.viewers)} 
-            trend="Real-time" 
-            icon={<Eye className="text-blue-400" />} 
-            desc="Broad audience reached through impressions and short-form content."
+            title="Total Trade Value (24h)" 
+            value={data.totals.tradeValue24h} 
+            trend="Active Flow" 
+            icon={<BadgeDollarSign className="text-blue-400" />} 
+            desc="Accumulated monetary value of cargo manifest crossings in the last 24h."
           />
           <MetricCard 
-            title="Builders (Clicks)" 
-            value={formatNum(data.totals.builders)} 
-            trend="Real-time" 
-            icon={<Users className="text-purple-400" />} 
-            desc="Engaged users who click through and spend significant watch time."
+            title="Truck Throughput (24h)" 
+            value={`${formatNum(data.totals.totalTrucks24h)} Vehicles`} 
+            trend="Commercial" 
+            icon={<Truck className="text-purple-400" />} 
+            desc="Total volume of processed supply chain trucks and logistics containers."
           />
           <MetricCard 
-            title="Allocators (Conversions)" 
-            value={formatNum(data.totals.allocators)} 
-            trend="Real-time" 
-            icon={<ArrowRightCircle className="text-emerald-400" />} 
-            desc="High-intent users taking conversion actions."
+            title="Average Transit Wait" 
+            value={data.totals.avgCommercialDelay} 
+            trend="Network Delay" 
+            icon={<Clock className="text-emerald-400" />} 
+            desc="Global average wait time index across all commercial freight terminals."
           />
         </div>
 
@@ -100,41 +166,144 @@ export function Dashboard() {
           {/* Main Content Area (70%) */}
           <div className="w-full lg:w-[70%] flex flex-col gap-6">
             
-            {/* Main Funnel */}
-            <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl">
-              <div className="mb-4">
-                <h2 className="text-xl font-semibold text-white">Distribution & Demand Funnel</h2>
-                <p className="text-sm text-gray-400 mt-1">Click on a stage below to view detailed handshake insights in the sidebar.</p>
-              </div>
-              <FunnelChart data={data.funnelData} onStageClick={setActiveStage} />
-            </div>
+            {/* Interactive Border Map */}
+            <BorderMap 
+              crossings={data.crossings} 
+              selectedId={selectedId} 
+              onSelectCrossing={setSelectedId} 
+            />
 
-            {/* Cohort Compare */}
-            <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl">
-              <div className="mb-4 flex justify-between items-center">
+            {/* Crossing Compare Engine */}
+            <CrossingCompare crossings={data.crossings} />
+
+            {/* Global Commodity & Historical split */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Commodity Flows */}
+              <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl">
                 <div>
-                  <h2 className="text-xl font-semibold text-white">Audience Cohort Comparison</h2>
-                  <p className="text-sm text-gray-400 mt-1">Analyzing audience segments engagement over time.</p>
+                  <h2 className="text-lg font-semibold text-white">Global Commodity Flows</h2>
+                  <p className="text-xs text-gray-400 mt-1">Aggregated monetary trade volume split by commodity type.</p>
                 </div>
+                <CommodityFlows data={data.globalCommodities} />
               </div>
-              <CohortCompare data={data.cohortData} />
+
+              {/* Historical Trends */}
+              <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl">
+                <div>
+                  <h2 className="text-lg font-semibold text-white">7-Day Transit Trends</h2>
+                  <p className="text-xs text-gray-400 mt-1">Historical correlation between flow throughput and average wait delays.</p>
+                </div>
+                <HistoricalTrends data={data.historicalTrends} />
+              </div>
+
             </div>
           </div>
 
           {/* Sidebar Content Area (30%) */}
           <div className="w-full lg:w-[30%] flex flex-col gap-6">
             
-            {/* Interactive Stage Handshake Panel */}
-            <StageSidebar stage={activeStage} />
+            {/* Contextual Selected Crossing Sidebar */}
+            {selectedCrossing && (
+              <div className="bg-gradient-to-b from-[#111827] to-[#0a0f1a] border border-blue-900/30 p-6 rounded-2xl shadow-xl flex flex-col h-full">
+                <div className="flex items-center gap-2 mb-4 text-blue-400 border-b border-gray-800/80 pb-3">
+                  <Activity size={20} />
+                  <h2 className="text-xs font-bold uppercase tracking-wider">Port Specification</h2>
+                </div>
+                
+                <div className="space-y-6">
+                  <div>
+                    <span className={`inline-block px-2.5 py-0.5 rounded-full border text-xs font-semibold mb-2 ${getStatusClass(selectedCrossing.status)}`}>
+                      {selectedCrossing.status}
+                    </span>
+                    <h3 className="text-2xl font-bold text-white leading-tight">{selectedCrossing.name}</h3>
+                  </div>
 
-            {/* Platform Split */}
-            <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl">
-              <div className="mb-4">
-                <h2 className="text-xl font-semibold text-white">Platform Split</h2>
-                <p className="text-sm text-gray-400 mt-1">Where the audience is consuming content.</p>
+                  {/* Delay Indicators */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-gray-900/80 border border-gray-800/60 p-3 rounded-xl">
+                      <span className="text-xs text-gray-500 font-bold block mb-1">Commercial Wait</span>
+                      <span className="text-lg font-extrabold text-blue-400">{selectedCrossing.commercialDelay} min</span>
+                    </div>
+                    <div className="bg-gray-900/80 border border-gray-800/60 p-3 rounded-xl">
+                      <span className="text-xs text-gray-500 font-bold block mb-1">Passenger Wait</span>
+                      <span className="text-lg font-extrabold text-cyan-400">{selectedCrossing.passengerDelay} min</span>
+                    </div>
+                  </div>
+
+                  {/* Port Stats */}
+                  <div className="space-y-2 border-t border-gray-850 pt-4">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Throughput (24h)</span>
+                      <span className="text-white font-bold">{selectedCrossing.throughput24h.toLocaleString()} trucks</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Trade Value (24h)</span>
+                      <span className="text-white font-bold">{selectedCrossing.value24h}</span>
+                    </div>
+                  </div>
+
+                  {/* Top Commodities */}
+                  <div className="border-t border-gray-850 pt-4">
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-3">Commodity Share</span>
+                    <div className="space-y-2">
+                      {selectedCrossing.commodities.map((comm) => (
+                        <div key={comm.name} className="flex items-center justify-between text-xs">
+                          <span className="text-gray-300 font-medium">{comm.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-white font-bold">{comm.value}%</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Adaptive Action Alerts */}
+                  {selectedCrossing.status !== "Normal" && (
+                    <div className="bg-amber-950/20 border border-amber-900/50 p-4 rounded-xl flex gap-3">
+                      <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
+                      <p className="text-amber-200 text-xs font-medium">
+                        <span className="text-white font-bold block mb-0.5">Congestion Advisory:</span>
+                        High freight backlogs detected. Reroute non-perishable shipments or extend customs agent schedules.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
-              <PlatformSplit data={data.platformData} />
+            )}
+
+            {/* Delay Cards Stack */}
+            <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl flex flex-col gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-white">Transit Delay Status</h2>
+                <p className="text-xs text-gray-400 mt-1">Active crossings ranked by transit backlog duration.</p>
+              </div>
+
+              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                {data.crossings
+                  .sort((a, b) => b.commercialDelay - a.commercialDelay)
+                  .map((crossing) => (
+                    <div 
+                      key={crossing.id}
+                      onClick={() => setSelectedId(crossing.id)}
+                      className={`flex items-center justify-between p-3 rounded-xl border border-gray-800 bg-gray-900/40 hover:border-gray-700 transition-colors cursor-pointer ${selectedId === crossing.id ? "border-blue-500/50 bg-blue-950/10" : ""}`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className={`w-2.5 h-2.5 rounded-full ${getStatusDot(crossing.status)}`}></span>
+                        <div className="text-xs">
+                          <span className="text-white font-bold block">{crossing.name.split(" ")[0]}</span>
+                          <span className="text-gray-500">{crossing.status}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-bold text-gray-300 block">{crossing.commercialDelay} min</span>
+                        <span className="text-[10px] text-gray-500">Commercial</span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
             </div>
+
           </div>
 
         </div>
@@ -151,67 +320,13 @@ function MetricCard({ title, value, trend, icon, desc }: { title: string, value:
         <div className="p-2 bg-gray-800 rounded-lg">
           {icon}
         </div>
-        <span className="text-xs font-medium px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded-full">{trend}</span>
+        <span className="text-xs font-medium px-2 py-1 bg-blue-500/10 text-blue-400 rounded-full">{trend}</span>
       </div>
       <div>
         <h3 className="text-gray-400 text-sm font-medium">{title}</h3>
         <p className="text-3xl font-bold text-white mt-1">{value}</p>
       </div>
       <p className="text-xs text-gray-500 mt-3 border-t border-gray-800 pt-3">{desc}</p>
-    </div>
-  );
-}
-
-function StageSidebar({ stage }: { stage: string }) {
-  const stageData: Record<string, { title: string, desc: string, highlight: string }> = {
-    "Impressions": {
-      title: "Top-of-Funnel Reach",
-      desc: "This stage represents the total visibility of your content across all platforms. A high impression count indicates strong algorithm distribution, primarily capturing the 'Everyday Viewers' segment.",
-      highlight: "Focus on eye-catching thumbnails and broad hooks to drive users deeper into the funnel."
-    },
-    "Watch Time (hrs)": {
-      title: "Content Retention",
-      desc: "Deep engagement metric. High watch time indicates that the content resonates strongly. This is where 'Everyday Viewers' begin transitioning into 'Builders'.",
-      highlight: "Analyze drop-off rates in your long-form content to improve core retention."
-    },
-    "Clicks (CTR)": {
-      title: "Intent Signal",
-      desc: "Users are taking explicit action to explore further. High CTR implies your calls-to-action (CTAs) and value propositions are effective.",
-      highlight: "A/B test your CTAs and link placements to maximize the throughput to Conversions."
-    },
-    "Conversions": {
-      title: "Bottom-of-Funnel Success",
-      desc: "The final handshake. These are your 'Allocators' committing capital, time, or significant trust to your ecosystem.",
-      highlight: "Nurture this cohort. They represent your highest Lifetime Value (LTV) audience."
-    }
-  };
-
-  // Fallback if stage doesn't perfectly match (though it should)
-  const data = stageData[stage] || stageData["Impressions"];
-
-  return (
-    <div className="bg-gradient-to-b from-[#111827] to-[#0a0f1a] border border-blue-900/30 p-6 rounded-2xl shadow-xl flex flex-col h-full">
-      <div className="flex items-center gap-2 mb-4 text-blue-400">
-        <Info size={20} />
-        <h2 className="text-sm font-bold uppercase tracking-wider">Stage Handshake</h2>
-      </div>
-      
-      <div className="flex-1">
-        <div className="inline-block px-3 py-1 bg-blue-500/10 text-blue-300 rounded-full text-xs font-semibold mb-3">
-          {stage}
-        </div>
-        <h3 className="text-2xl font-bold text-white mb-3">{data.title}</h3>
-        <p className="text-gray-400 text-sm leading-relaxed mb-6">
-          {data.desc}
-        </p>
-        
-        <div className="bg-blue-950/20 border border-blue-900/50 p-4 rounded-xl">
-          <p className="text-blue-200 text-sm font-medium">
-            <span className="text-white font-bold block mb-1">Action Item:</span>
-            {data.highlight}
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

@@ -35,26 +35,25 @@ describe('Dashboard E2E', () => {
     await driver.get(url);
 
     // Wait for the main dashboard container to load
-    // It should have a heading with 'Creator Distribution Funnel'
+    // It should have a heading with 'Border Crossing Trade & Logistics Analytics'
     const heading = await driver.wait(
-      until.elementLocated(By.xpath("//h1[contains(text(), 'Creator Distribution Funnel')]")),
+      until.elementLocated(By.xpath("//h1[contains(text(), 'Border Crossing Trade & Logistics Analytics')]")),
       10000
     );
 
     const text = await heading.getText();
-    expect(text).toContain('Creator Distribution Funnel');
+    expect(text).toContain('Border Crossing Trade & Logistics Analytics');
   });
 
-  it('should have the Funnel Chart component rendered', async () => {
-    // The Funnel Chart is wrapped in a Card with a specific title.
-    // Let's check for the "Audience Journey" title or the recharts container.
-    const funnelTitle = await driver.wait(
-      until.elementLocated(By.xpath("//h2[contains(text(), 'Distribution & Demand Funnel')]")),
+  it('should have the Interactive Border Corridor Map and chart component rendered', async () => {
+    // Check for the "Interactive Border Corridor Map" title
+    const mapTitle = await driver.wait(
+      until.elementLocated(By.xpath("//h2[contains(text(), 'Interactive Border Corridor Map')]")),
       10000
     );
 
-    const text = await funnelTitle.getText();
-    expect(text).toContain('Distribution & Demand Funnel');
+    const text = await mapTitle.getText();
+    expect(text).toContain('Interactive Border Corridor Map');
     
     // Check if recharts-wrapper exists (indicating the chart rendered)
     const chart = await driver.wait(
