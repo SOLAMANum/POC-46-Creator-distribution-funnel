@@ -11,7 +11,7 @@ async function capture() {
   options.addArguments('--no-sandbox');
   options.addArguments('--disable-dev-shm-usage');
   options.addArguments('--disable-gpu');
-  options.addArguments('--window-size=1600,1200');
+  options.addArguments('--window-size=1600,2800');
 
   const service = new chrome.ServiceBuilder(require('chromedriver').path);
 
@@ -26,18 +26,15 @@ async function capture() {
     await driver.get('http://localhost:3000');
 
     console.log("Waiting for page load...");
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    await new Promise(resolve => setTimeout(resolve, 3500));
 
-    console.log("Scrolling down to comparison section...");
-    await driver.executeScript("window.scrollTo(0, 950);");
-    
     console.log("Waiting 2 seconds for visual stabilization...");
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     console.log("Capturing comparison screenshot...");
     const screenshot = await driver.takeScreenshot();
     
-    const targetDir = path.join('C:\\Users\\LENOVO\\.gemini\antigravity\\brain\\4851e405-922d-456f-9abe-0dbd7a4aa2c3\\.system_generated\\click_feedback');
+    const targetDir = path.join('C:\\Users\\LENOVO\\.gemini\\antigravity\\brain\\77b8300b-c625-4f95-934c-316a7d99cbdf');
     if (!fs.existsSync(targetDir)) {
       fs.mkdirSync(targetDir, { recursive: true });
     }

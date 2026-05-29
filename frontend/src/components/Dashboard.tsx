@@ -119,16 +119,6 @@ export function Dashboard() {
           </div>
           
           <div className="flex gap-3">
-            <button 
-              onClick={() => {
-                // Quick export placeholder or download logic
-                alert("Exporting border logistics report...");
-              }}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 font-medium rounded-lg text-sm transition-colors shadow-lg"
-            >
-              <FileSpreadsheet size={16} />
-              Export Logistics CSV
-            </button>
             <div className="flex items-center gap-2 bg-gray-900 border border-gray-800 px-4 py-2 rounded-lg text-sm text-gray-300">
               <Filter size={16} />
               <span>Sectors: All Ports</span>
@@ -136,30 +126,7 @@ export function Dashboard() {
           </div>
         </header>
 
-        {/* Top Metric Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <MetricCard 
-            title="Total Trade Value (24h)" 
-            value={data.totals.tradeValue24h} 
-            trend="Active Flow" 
-            icon={<BadgeDollarSign className="text-blue-400" />} 
-            desc="Accumulated monetary value of cargo manifest crossings in the last 24h."
-          />
-          <MetricCard 
-            title="Truck Throughput (24h)" 
-            value={`${formatNum(data.totals.totalTrucks24h)} Vehicles`} 
-            trend="Commercial" 
-            icon={<Truck className="text-purple-400" />} 
-            desc="Total volume of processed supply chain trucks and logistics containers."
-          />
-          <MetricCard 
-            title="Average Transit Wait" 
-            value={data.totals.avgCommercialDelay} 
-            trend="Network Delay" 
-            icon={<Clock className="text-emerald-400" />} 
-            desc="Global average wait time index across all commercial freight terminals."
-          />
-        </div>
+
 
         {/* 70/30 Layout Split */}
         <div className="flex flex-col lg:flex-row gap-6">
@@ -203,6 +170,31 @@ export function Dashboard() {
 
           {/* Sidebar Content Area (30%) */}
           <div className="w-full lg:w-[30%] flex flex-col gap-6">
+            
+            {/* Global Metrics */}
+            <div className="flex flex-col gap-4">
+              <MetricCard 
+                title="Total Trade Value (24h)" 
+                value={data.totals.tradeValue24h} 
+                trend="Active Flow" 
+                icon={<BadgeDollarSign className="text-blue-400" />} 
+                desc="Accumulated monetary value of cargo manifest crossings in the last 24h."
+              />
+              <MetricCard 
+                title="Truck Throughput (24h)" 
+                value={`${formatNum(data.totals.totalTrucks24h)} Vehicles`} 
+                trend="Commercial" 
+                icon={<Truck className="text-purple-400" />} 
+                desc="Total volume of processed supply chain trucks and logistics containers."
+              />
+              <MetricCard 
+                title="Average Transit Wait" 
+                value={data.totals.avgCommercialDelay} 
+                trend="Network Delay" 
+                icon={<Clock className="text-emerald-400" />} 
+                desc="Global average wait time index across all commercial freight terminals."
+              />
+            </div>
             
             {/* Contextual Selected Crossing Sidebar */}
             {selectedCrossing && (
@@ -304,6 +296,33 @@ export function Dashboard() {
                   ))}
               </div>
             </div>
+
+            {/* Information Card (Why this matters & Who controls this) */}
+            <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl space-y-4">
+              <div>
+                <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider">Why this matters</h3>
+                <p className="text-xs text-gray-400 mt-1.5 leading-relaxed">
+                  Transit delays directly impact global supply chains, increasing transport costs and affecting just-in-time manufacturing. Monitoring these metrics in real-time allows logistics operators to optimize routing, reduce idle fuel waste, and ensure timely cargo delivery.
+                </p>
+              </div>
+              <div className="border-t border-gray-800/80 pt-4">
+                <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Who controls this</h3>
+                <p className="text-xs text-gray-400 mt-1.5 leading-relaxed">
+                  Port operations and border crossing points are co-managed by federal and state agencies, including <strong>U.S. Customs and Border Protection (CBP)</strong> and Mexico's <strong>Servicio de Administración Tributaria (SAT)</strong>, alongside local port authorities.
+                </p>
+              </div>
+            </div>
+
+            {/* Export Action Button */}
+            <button 
+              onClick={() => {
+                alert("Exporting border logistics report...");
+              }}
+              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 font-semibold rounded-xl text-sm transition-colors shadow-lg"
+            >
+              <FileSpreadsheet size={16} />
+              Export Logistics CSV
+            </button>
 
           </div>
 
