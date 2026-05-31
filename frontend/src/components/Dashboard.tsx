@@ -16,7 +16,11 @@ import {
   BadgeDollarSign, 
   Activity,
   AlertCircle,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Info,
+  X,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 
 interface Crossing {
@@ -47,6 +51,10 @@ interface DashboardData {
 export function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [selectedId, setSelectedId] = useState<string>("laredo");
+  const [isPanelOpen, setIsPanelOpen] = useState<boolean>(false);
+  const [isInfoOpen, setIsInfoOpen] = useState<boolean>(false);
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState<boolean>(true);
+  const [analyticsTab, setAnalyticsTab] = useState<"compare" | "charts">("charts");
 
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -60,7 +68,7 @@ export function Dashboard() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-[#030712] flex items-center justify-center">
+      <div className="min-h-screen bg-[#040914] flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
       </div>
     );
@@ -103,250 +111,349 @@ export function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#030712] text-gray-100 p-6 font-sans selection:bg-blue-500/30">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Header section */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-800 pb-6 gap-4">
+    <div className="h-screen w-screen bg-[#040914] text-gray-100 font-sans flex flex-col overflow-hidden selection:bg-blue-500/30">
+      
+      {/* Pillar III: Transparent InfoCreon Header */}
+      <header className="h-16 border-b border-gray-800/55 bg-[#040914]/70 backdrop-blur-md px-6 flex items-center justify-between z-40 shrink-0 select-none">
+        <div className="flex items-center gap-3">
+          <div className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+          </div>
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-emerald-500 bg-clip-text text-transparent">
+            <h1 className="text-base md:text-lg font-bold bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent tracking-wide select-none">
               Border Crossing Trade & Logistics Analytics
             </h1>
-            <p className="text-gray-400 mt-2 max-w-2xl">
-              Real-time monitor of port transit delays, commercial trade values, vehicle throughputs, 
-              and commodity splits along key border crossings.
+            <p className="text-[9px] text-gray-500 font-bold tracking-wider uppercase hidden sm:block">
+              Real-Time Corridor Operations Command Center
             </p>
           </div>
-          
-          <div className="flex gap-3">
-            <div className="flex items-center gap-2 bg-gray-900 border border-gray-800 px-4 py-2 rounded-lg text-sm text-gray-300">
-              <Filter size={16} />
-              <span>Sectors: All Ports</span>
-            </div>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-2 bg-[#090f1e]/60 border border-gray-800 px-3 py-1 rounded-full text-[10px] font-bold text-gray-400 uppercase">
+            <span>Sectors: US-MEX Corridor</span>
           </div>
-        </header>
-
-
-
-        {/* 70/30 Layout Split */}
-        <div className="flex flex-col lg:flex-row gap-6">
           
-          {/* Main Content Area (70%) */}
-          <div className="w-full lg:w-[70%] flex flex-col gap-6">
+          {/* sleek (i) Info Icon Button */}
+          <button 
+            onClick={() => setIsInfoOpen(true)}
+            className="p-2 hover:bg-gray-850/80 rounded-xl text-gray-400 hover:text-white transition-colors cursor-pointer border border-gray-800/40 bg-[#090f1e]/40"
+            title="Structural Metadata"
+          >
+            <Info className="w-5 h-5 text-blue-400 hover:scale-110 transition-transform" />
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content Area (100% Full Screen Stage) */}
+      <div className="relative flex-1 w-full h-full overflow-hidden bg-[#02040a]">
+        
+        {/* Background Map Container (Takes up 100% Screen) */}
+        <div className="absolute inset-0 w-full h-full z-0">
+          <BorderMap 
+            crossings={data.crossings} 
+            selectedId={selectedId} 
+            onSelectCrossing={(id) => {
+              setSelectedId(id);
+              setIsPanelOpen(true); // Clicking map marker slides open panel
+            }} 
+          />
+        </div>
+
+        {/* Global Mini-Metrics HUD Panel - Floating Top Left */}
+        <div className="absolute top-4 left-4 z-20 flex flex-col md:flex-row gap-3 max-w-[calc(100vw-32px)]">
+          <FloatingMetricCard 
+            title="Total Trade Value (24h)"
+            value={data.totals.tradeValue24h}
+            icon={<BadgeDollarSign className="text-blue-400 w-4 h-4" />}
+          />
+          <FloatingMetricCard 
+            title="Truck Throughput (24h)"
+            value={`${formatNum(data.totals.totalTrucks24h)} Vehicles`}
+            icon={<Truck className="text-purple-400 w-4 h-4" />}
+          />
+          <FloatingMetricCard 
+            title="Average Wait Index"
+            value={data.totals.avgCommercialDelay}
+            icon={<Clock className="text-emerald-400 w-4 h-4" />}
+          />
+        </div>
+
+        {/* Collapsible Analytics Command Engine HUD Panel - Floating Bottom Left */}
+        <div className={`absolute bottom-4 left-4 z-20 w-[550px] max-w-[calc(100vw-32px)] bg-[#090f1e]/85 backdrop-blur-md border border-gray-800/80 rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 pointer-events-auto flex flex-col ${isAnalyticsOpen ? "h-[380px]" : "h-12"}`}>
+          
+          {/* HUD Header */}
+          <div className="h-12 px-4 border-b border-gray-800/80 flex items-center justify-between shrink-0 bg-[#060a15]/90">
+            <div className="flex items-center gap-3">
+              <Activity className="w-4 h-4 text-indigo-400" />
+              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-300">Logistics Analytics Engine</span>
+            </div>
             
-            {/* Interactive Border Map */}
-            <BorderMap 
-              crossings={data.crossings} 
-              selectedId={selectedId} 
-              onSelectCrossing={setSelectedId} 
-            />
-
-            {/* Crossing Compare Engine */}
-            <CrossingCompare crossings={data.crossings} />
-
-            {/* Global Commodity & Historical split */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex items-center gap-3">
+              {/* Tab Selector */}
+              {isAnalyticsOpen && (
+                <div className="flex items-center bg-[#131b2e] border border-gray-800 p-0.5 rounded-lg text-[10px] font-bold">
+                  <button 
+                    onClick={() => setAnalyticsTab("compare")} 
+                    className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${analyticsTab === "compare" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"}`}
+                  >
+                    Compare Engine
+                  </button>
+                  <button 
+                    onClick={() => setAnalyticsTab("charts")} 
+                    className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${analyticsTab === "charts" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"}`}
+                  >
+                    Trends & Splits
+                  </button>
+                </div>
+              )}
               
-              {/* Commodity Flows */}
-              <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl">
-                <div>
-                  <h2 className="text-lg font-semibold text-white">Global Commodity Flows</h2>
-                  <p className="text-xs text-gray-400 mt-1">Aggregated monetary trade volume split by commodity type.</p>
-                </div>
-                <CommodityFlows data={data.globalCommodities} />
-              </div>
-
-              {/* Historical Trends */}
-              <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl">
-                <div>
-                  <h2 className="text-lg font-semibold text-white">7-Day Transit Trends</h2>
-                  <p className="text-xs text-gray-400 mt-1">Historical correlation between flow throughput and average wait delays.</p>
-                </div>
-                <HistoricalTrends data={data.historicalTrends} />
-              </div>
-
+              {/* Collapse HUD Toggle */}
+              <button 
+                onClick={() => setIsAnalyticsOpen(!isAnalyticsOpen)}
+                className="p-1 hover:bg-gray-800 rounded-md text-gray-400 hover:text-white transition-colors cursor-pointer"
+              >
+                {isAnalyticsOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+              </button>
             </div>
           </div>
 
-          {/* Sidebar Content Area (30%) */}
-          <div className="w-full lg:w-[30%] flex flex-col gap-6">
-            
-            {/* Global Metrics */}
-            <div className="flex flex-col gap-4">
-              <MetricCard 
-                title="Total Trade Value (24h)" 
-                value={data.totals.tradeValue24h} 
-                trend="Active Flow" 
-                icon={<BadgeDollarSign className="text-blue-400" />} 
-                desc="Accumulated monetary value of cargo manifest crossings in the last 24h."
-              />
-              <MetricCard 
-                title="Truck Throughput (24h)" 
-                value={`${formatNum(data.totals.totalTrucks24h)} Vehicles`} 
-                trend="Commercial" 
-                icon={<Truck className="text-purple-400" />} 
-                desc="Total volume of processed supply chain trucks and logistics containers."
-              />
-              <MetricCard 
-                title="Average Transit Wait" 
-                value={data.totals.avgCommercialDelay} 
-                trend="Network Delay" 
-                icon={<Clock className="text-emerald-400" />} 
-                desc="Global average wait time index across all commercial freight terminals."
-              />
+          {/* HUD Panel Content */}
+          {isAnalyticsOpen && (
+            <div className="flex-1 overflow-y-auto p-4 bg-[#090f1e]/60">
+              <div className={analyticsTab === "compare" ? "scale-95 origin-top-left w-[105%]" : "hidden"}>
+                <CrossingCompare crossings={data.crossings} />
+              </div>
+              <div className={analyticsTab === "charts" ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "hidden"}>
+                {/* Commodity split */}
+                <div className="bg-[#111827]/40 border border-gray-800/40 p-4 rounded-xl">
+                  <h3 className="text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">Global Commodity Split</h3>
+                  <div className="h-[200px]">
+                    <CommodityFlows data={data.globalCommodities} />
+                  </div>
+                </div>
+                {/* Historical delays */}
+                <div className="bg-[#111827]/40 border border-gray-800/40 p-4 rounded-xl">
+                  <h3 className="text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">7-Day Transit Delays</h3>
+                  <div className="h-[200px]">
+                    <HistoricalTrends data={data.historicalTrends} />
+                  </div>
+                </div>
+              </div>
             </div>
+          )}
+        </div>
+
+        {/* Pillar II: Slide-over Intelligence Panel Drawer (30% Content) */}
+        <div className={`fixed top-0 right-0 h-full w-full sm:max-w-md bg-[#070b14]/95 backdrop-blur-xl border-l border-gray-800/80 shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out ${isPanelOpen ? "translate-x-0" : "translate-x-full"}`}>
+          
+          {/* Drawer Header */}
+          <div className="h-16 px-6 border-b border-gray-800/85 flex items-center justify-between shrink-0 bg-[#090f1e]">
+            <div className="flex items-center gap-2 text-blue-400">
+              <Activity size={18} className="animate-pulse" />
+              <h2 className="text-xs font-bold uppercase tracking-wider">Checkpoint Spec Sheet</h2>
+            </div>
+            <button 
+              onClick={() => setIsPanelOpen(false)}
+              className="p-1.5 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition-colors cursor-pointer border border-gray-800 bg-[#090f1e]/80"
+              title="Close Drawer"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Drawer Content */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-[#070b14] to-[#040811]">
             
-            {/* Contextual Selected Crossing Sidebar */}
+            {/* Selected Crossing Core Details */}
             {selectedCrossing && (
-              <div className="bg-gradient-to-b from-[#111827] to-[#0a0f1a] border border-blue-900/30 p-6 rounded-2xl shadow-xl flex flex-col h-full">
-                <div className="flex items-center gap-2 mb-4 text-blue-400 border-b border-gray-800/80 pb-3">
-                  <Activity size={20} />
-                  <h2 className="text-xs font-bold uppercase tracking-wider">Port Specification</h2>
+              <div className="space-y-6">
+                <div>
+                  <span className={`inline-block px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider mb-2 ${getStatusClass(selectedCrossing.status)}`}>
+                    {selectedCrossing.status}
+                  </span>
+                  <h3 className="text-2xl font-bold text-white leading-tight">{selectedCrossing.name}</h3>
                 </div>
-                
-                <div className="space-y-6">
-                  <div>
-                    <span className={`inline-block px-2.5 py-0.5 rounded-full border text-xs font-semibold mb-2 ${getStatusClass(selectedCrossing.status)}`}>
-                      {selectedCrossing.status}
-                    </span>
-                    <h3 className="text-2xl font-bold text-white leading-tight">{selectedCrossing.name}</h3>
-                  </div>
 
-                  {/* Delay Indicators */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-gray-900/80 border border-gray-800/60 p-3 rounded-xl">
-                      <span className="text-xs text-gray-500 font-bold block mb-1">Commercial Wait</span>
-                      <span className="text-lg font-extrabold text-blue-400">{selectedCrossing.commercialDelay} min</span>
-                    </div>
-                    <div className="bg-gray-900/80 border border-gray-800/60 p-3 rounded-xl">
-                      <span className="text-xs text-gray-500 font-bold block mb-1">Passenger Wait</span>
-                      <span className="text-lg font-extrabold text-cyan-400">{selectedCrossing.passengerDelay} min</span>
-                    </div>
+                {/* Delay HUD */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-[#111827]/40 border border-gray-800/50 p-3.5 rounded-xl">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block mb-1">Commercial Wait</span>
+                    <span className="text-lg font-extrabold text-blue-400">{selectedCrossing.commercialDelay} min</span>
                   </div>
-
-                  {/* Port Stats */}
-                  <div className="space-y-2 border-t border-gray-850 pt-4">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Throughput (24h)</span>
-                      <span className="text-white font-bold">{selectedCrossing.throughput24h.toLocaleString()} trucks</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Trade Value (24h)</span>
-                      <span className="text-white font-bold">{selectedCrossing.value24h}</span>
-                    </div>
+                  <div className="bg-[#111827]/40 border border-gray-800/50 p-3.5 rounded-xl">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block mb-1">Passenger Wait</span>
+                    <span className="text-lg font-extrabold text-cyan-400">{selectedCrossing.passengerDelay} min</span>
                   </div>
-
-                  {/* Top Commodities */}
-                  <div className="border-t border-gray-850 pt-4">
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-3">Commodity Share</span>
-                    <div className="space-y-2">
-                      {selectedCrossing.commodities.map((comm) => (
-                        <div key={comm.name} className="flex items-center justify-between text-xs">
-                          <span className="text-gray-300 font-medium">{comm.name}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-white font-bold">{comm.value}%</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Adaptive Action Alerts */}
-                  {selectedCrossing.status !== "Normal" && (
-                    <div className="bg-amber-950/20 border border-amber-900/50 p-4 rounded-xl flex gap-3">
-                      <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
-                      <p className="text-amber-200 text-xs font-medium">
-                        <span className="text-white font-bold block mb-0.5">Congestion Advisory:</span>
-                        High freight backlogs detected. Reroute non-perishable shipments or extend customs agent schedules.
-                      </p>
-                    </div>
-                  )}
                 </div>
+
+                {/* Throughput details */}
+                <div className="space-y-2.5 border-t border-gray-850 pt-4">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-400 font-medium">Processed Throughput (24h)</span>
+                    <span className="text-white font-bold">{selectedCrossing.throughput24h.toLocaleString()} trucks</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-400 font-medium">Manifest Value (24h)</span>
+                    <span className="text-white font-bold">{selectedCrossing.value24h}</span>
+                  </div>
+                </div>
+
+                {/* Commodity split percentages */}
+                <div className="border-t border-gray-850 pt-4">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-3">Commodity Makeup</span>
+                  <div className="space-y-2.5">
+                    {selectedCrossing.commodities.map((comm) => (
+                      <div key={comm.name} className="flex items-center justify-between text-xs">
+                        <span className="text-gray-300 font-medium">{comm.name}</span>
+                        <span className="text-white font-bold">{comm.value}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Advisory Warnings */}
+                {selectedCrossing.status !== "Normal" && (
+                  <div className="bg-amber-950/20 border border-amber-900/40 p-4 rounded-xl flex gap-3">
+                    <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 animate-pulse" />
+                    <p className="text-amber-200 text-xs font-medium leading-relaxed">
+                      <span className="text-white font-bold block mb-0.5">Corridor Delay Advisory:</span>
+                      Freight backlog detected. Reroute non-perishables or extend customs clearance operations.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Delay Cards Stack */}
-            <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl flex flex-col gap-4">
+            {/* Global ranked list of backlogs */}
+            <div className="border-t border-gray-850 pt-6 space-y-4">
               <div>
-                <h2 className="text-lg font-semibold text-white">Transit Delay Status</h2>
-                <p className="text-xs text-gray-400 mt-1">Active crossings ranked by transit backlog duration.</p>
+                <h3 className="text-xs font-bold text-white uppercase tracking-wider">Delay Queue Stack</h3>
+                <p className="text-[10px] text-gray-500 mt-1">Crossings ranked by commercial freight wait duration.</p>
               </div>
 
-              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+              <div className="space-y-2">
                 {data.crossings
                   .sort((a, b) => b.commercialDelay - a.commercialDelay)
                   .map((crossing) => (
                     <div 
                       key={crossing.id}
                       onClick={() => setSelectedId(crossing.id)}
-                      className={`flex items-center justify-between p-3 rounded-xl border border-gray-800 bg-gray-900/40 hover:border-gray-700 transition-colors cursor-pointer ${selectedId === crossing.id ? "border-blue-500/50 bg-blue-950/10" : ""}`}
+                      className={`flex items-center justify-between p-3 rounded-xl border transition-colors cursor-pointer ${selectedId === crossing.id ? "border-blue-500/50 bg-blue-950/15" : "border-gray-850 bg-[#111827]/20 hover:border-gray-800"}`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <span className={`w-2.5 h-2.5 rounded-full ${getStatusDot(crossing.status)}`}></span>
+                        <span className={`w-2 h-2 rounded-full ${getStatusDot(crossing.status)}`}></span>
                         <div className="text-xs">
                           <span className="text-white font-bold block">{crossing.name.split(" ")[0]}</span>
-                          <span className="text-gray-500">{crossing.status}</span>
+                          <span className="text-gray-500 text-[10px]">{crossing.status}</span>
                         </div>
                       </div>
                       <div className="text-right">
                         <span className="text-xs font-bold text-gray-300 block">{crossing.commercialDelay} min</span>
-                        <span className="text-[10px] text-gray-500">Commercial</span>
+                        <span className="text-[9px] text-gray-500">Commercial</span>
                       </div>
                     </div>
                   ))}
               </div>
             </div>
 
-            {/* Information Card (Why this matters & Who controls this) */}
-            <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl space-y-4">
+            {/* Context Advisory Details */}
+            <div className="border-t border-gray-850 pt-6 space-y-4">
               <div>
-                <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider">Why this matters</h3>
-                <p className="text-xs text-gray-400 mt-1.5 leading-relaxed">
-                  Transit delays directly impact global supply chains, increasing transport costs and affecting just-in-time manufacturing. Monitoring these metrics in real-time allows logistics operators to optimize routing, reduce idle fuel waste, and ensure timely cargo delivery.
+                <h4 className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Why this matters</h4>
+                <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed">
+                  Logistical delay metrics direct the flow of supply-chains, directly affecting just-in-time cross-border manufacturing pipelines.
                 </p>
               </div>
-              <div className="border-t border-gray-800/80 pt-4">
-                <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Who controls this</h3>
-                <p className="text-xs text-gray-400 mt-1.5 leading-relaxed">
-                  Port operations and border crossing points are co-managed by federal and state agencies, including <strong>U.S. Customs and Border Protection (CBP)</strong> and Mexico's <strong>Servicio de Administración Tributaria (SAT)</strong>, alongside local port authorities.
+              <div>
+                <h4 className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Co-Managing Jurisdictions</h4>
+                <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed">
+                  Clearance operations co-managed by **U.S. Customs & Border Protection (CBP)** and Mexico's **SAT**.
                 </p>
               </div>
             </div>
 
-            {/* Export Action Button */}
+            {/* CSV export manifest trigger */}
             <button 
-              onClick={() => {
-                alert("Exporting border logistics report...");
-              }}
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 font-semibold rounded-xl text-sm transition-colors shadow-lg"
+              onClick={() => alert("Downloading cross-border logistics stream CSV...")}
+              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 font-bold rounded-xl text-xs transition-colors shadow-lg cursor-pointer"
             >
-              <FileSpreadsheet size={16} />
-              Export Logistics CSV
+              <FileSpreadsheet size={14} />
+              Export Logistics Stream CSV
             </button>
-
           </div>
-
         </div>
 
       </div>
+
+      {/* InfoCreon Popover Modal Signature */}
+      {isInfoOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md animate-fade-in select-none">
+          <div className="w-full max-w-sm bg-[#090f1e]/95 backdrop-blur-xl border border-blue-900/40 rounded-2xl shadow-2xl p-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500"></div>
+            
+            <button 
+              onClick={() => setIsInfoOpen(false)}
+              className="absolute top-4 right-4 p-1.5 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition-colors cursor-pointer border border-gray-800 bg-[#090f1e]/85"
+            >
+              <X size={16} />
+            </button>
+
+            <div className="flex items-center gap-3 mb-6 border-b border-gray-850 pb-4">
+              <div className="p-2 bg-blue-500/10 rounded-lg">
+                <Activity className="w-6 h-6 text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wide">Developer Signature</h3>
+                <p className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Infocreon Structural Verification</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-[#111827]/40 border border-gray-800 p-4 rounded-xl space-y-3">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-400 font-medium">Architect:</span>
+                  <span className="text-white font-bold">Antigravity AI & Angel UM</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-400 font-medium">Batch:</span>
+                  <span className="text-white font-bold">Batch 2 Interns</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-400 font-medium">Stack:</span>
+                  <span className="text-blue-400 font-bold">Next.js, FastAPI, Tailwind CSS, SVG Map, Recharts</span>
+                </div>
+              </div>
+
+              <div className="text-[9px] text-gray-500 text-center uppercase tracking-wider border-t border-gray-850 pt-4 font-bold">
+                Border Analytics HUD Command Center • v1.0.0
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
 
-function MetricCard({ title, value, trend, icon, desc }: { title: string, value: string, trend: string, icon: React.ReactNode, desc: string }) {
+interface FloatingMetricCardProps {
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+}
+
+function FloatingMetricCard({ title, value, icon }: FloatingMetricCardProps) {
   return (
-    <div className="bg-[#111827] border border-gray-800 p-5 rounded-2xl shadow-lg hover:border-gray-700 transition-colors">
-      <div className="flex justify-between items-start mb-4">
-        <div className="p-2 bg-gray-800 rounded-lg">
-          {icon}
-        </div>
-        <span className="text-xs font-medium px-2 py-1 bg-blue-500/10 text-blue-400 rounded-full">{trend}</span>
+    <div className="bg-[#090f1e]/80 backdrop-blur-md border border-gray-800/80 px-4 py-2.5 rounded-xl shadow-lg hover:border-gray-700 transition-colors pointer-events-auto flex items-center gap-3">
+      <div className="p-1.5 bg-[#111827]/80 border border-gray-850 rounded-lg">
+        {icon}
       </div>
       <div>
-        <h3 className="text-gray-400 text-sm font-medium">{title}</h3>
-        <p className="text-3xl font-bold text-white mt-1">{value}</p>
+        <h4 className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">{title}</h4>
+        <p className="text-xs font-bold text-white mt-0.5">{value}</p>
       </div>
-      <p className="text-xs text-gray-500 mt-3 border-t border-gray-800 pt-3">{desc}</p>
     </div>
   );
 }

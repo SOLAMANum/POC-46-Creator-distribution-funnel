@@ -1,0 +1,31 @@
+# Root-level Docker build context exclusions
+
+# Git
+.git
+.gitignore
+
+# Docs
+*.md
+*.docx
+
+# Frontend — exclude dev artifacts, tests, and cache
+frontend/node_modules
+frontend/.next
+frontend/coverage
+frontend/__tests__
+frontend/scratch_*.js
+frontend/repomix-output.xml
+frontend/.env*
+frontend/Dockerfile
+
+# Backend — exclude venv and Python cache
+backend/venv
+backend/__pycache__
+backend/*.pyc
+backend/*.pyo
+
+# Compose / env files (not needed inside image)
+docker-compose.yml
+.env
+.env.example
+.env.local
