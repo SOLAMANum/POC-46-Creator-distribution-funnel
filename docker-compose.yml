@@ -1,62 +1,138 @@
 # ============================================================
-# POC 46 Creator Distribution Funnel — Docker Compose Stack
-# Usage:
-#   cp .env.example .env       # fill in your real values
-#   docker compose up --build  # spin up both services
+# Cinematic Rail PoC — Docker Compose Stack
+#
+# Quick start:
+#   cp .env.example .env          # fill in your real values
+#   docker compose up --build     # build images & start services
+#
+# Services:
+#   backend   → http://localhost:5000   (FastAPI / Uvicorn)
+#   frontend  → http://localhost:3000   (Next.js standalone)
+#
+# ⚠  NEXT_PUBLIC_* variables are baked into the JS bundle at
+#    BUILD TIME.  If you change NEXT_PUBLIC_API_URL or
+#    NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN you must rebuild the
+#    frontend image:
+#       docker compose up --build frontend
 # ============================================================
 
 services:
 
-  # ──────────────────────────────────────────────
+  # ────────────────────────────────────────────────────────────
   # FastAPI Backend  →  http://localhost:5000
-  # ──────────────────────────────────────────────
+  # ────────────────────────────────────────────────────────────
   backend:
     build:
       context: .
       dockerfile: Dockerfile
-      target: backend-runner
-    container_name: poc46-backend
+      target: backend-runner       # only builds backend stages
+
+    container_name: cinematic-rail-backend
+    image: cinematic-rail/backend:local
+
     ports:
       - "5000:5000"
+
+    # All variables in .env are injected into the container at
+    # runtime.  DATA_API_KEY is consumed here; NEXT_PUBLIC_*
+    # are forwarded to docker-compose build args (frontend only).
     env_file:
       - .env
+
+    # Explicit runtime env — overrides anything from env_file if
+    # you need a hard default that can't be accidentally blanked.
     environment:
-      - PORT=5000
+      PORT: "5000"
+      PYTHONUNBUFFERED: "1"
+
     restart: unless-stopped
+
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/data')"]
+      # Uses only the stdlib — no curl/wget needed in the slim image
+      test:
+        - "CMD"
+        - "python"
+        - "-c"
+        - "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/data', timeout=5)"
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 15s
 
-  # ──────────────────────────────────────────────
+    # Isolate backend on its own network segment; only the
+    # frontend service can reach it (no direct host exposure
+    # beyond the port mapping above).
+    networks:
+      - rail-internal
+      - rail-public
+
+
+  # ────────────────────────────────────────────────────────────
   # Next.js Frontend  →  http://localhost:3000
-  # NOTE: NEXT_PUBLIC_* vars are baked into the
-  # bundle at BUILD TIME — update args & rebuild
-  # if you change the backend URL.
-  # ──────────────────────────────────────────────
+  # ────────────────────────────────────────────────────────────
   frontend:
     build:
       context: .
       dockerfile: Dockerfile
-      target: frontend-runner
+      target: frontend-runner      # builds all four stages
+
+      # NEXT_PUBLIC_* must be passed as build args so Next.js
+      # can inline them into the static bundle at compile time.
+      # Values are read from the .env file via variable substitution.
       args:
-        # These build args inject NEXT_PUBLIC_ values into the JS bundle
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000}
-        NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN: ${NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN:-}
-    container_name: poc46-frontend
+        NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN: ${NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
+
+    container_name: cinematic-rail-frontend
+    image: cinematic-rail/frontend:local
+
     ports:
       - "3000:3000"
+
     env_file:
       - .env
+
+    environment:
+      NODE_ENV: "production"
+      PORT: "3000"
+
+    # Don't start frontend until backend passes its health check.
+    # This prevents the React app from rendering a broken API state
+    # on the very first request.
     depends_on:
       backend:
         condition: service_healthy
+
     restart: unless-stopped
+
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      test:
+        - "CMD"
+        - "node"
+        - "-e"
+        - >
+          require('http').get('http://localhost:3000', (r) => {
+            process.exit(r.statusCode === 200 ? 0 : 1);
+          }).on('error', () => process.exit(1));
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 20s
+      start_period: 30s       # Next.js cold-boot needs a bit longer
+
+    networks:
+      - rail-internal
+      - rail-public
+
+
+# ──────────────────────────────────────────────────────────────
+# Networks
+# rail-internal  — backend ↔ frontend traffic (no external exposure)
+# rail-public    — services that need host-reachable ports
+# ──────────────────────────────────────────────────────────────
+networks:
+  rail-internal:
+    driver: bridge
+    internal: true        # no outbound internet from this segment
+
+  rail-public:
+    driver: bridge

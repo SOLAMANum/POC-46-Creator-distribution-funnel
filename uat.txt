@@ -1,0 +1,132 @@
+User Acceptance Testing (UAT) Report - Creator Distribution Funnel
+
+1. Initial Load & Data Handshakes
+Status: ✅ PASSED | Tester: Angel UM | Date: 2026-05-14
+Test ID
+Test Case
+Expected Result
+Actual Result
+Status
+Evidence
+LOAD-01
+Data Ingestion
+Dashboard requests /api/data on mount
+API call successful, 200 response
+✅ PASS
+Network tab screenshot
+LOAD-02
+Loading State
+Centered spinner displays on dark background
+Spinner visible during API call
+✅ PASS
+Video capture
+LOAD-03
+Data Processing
+CSV data maps to funnelData, platformData, cohortData, totals
+All props populated correctly
+✅ PASS
+Console.log verification
+
+2. Interactive Elements (Funnel Stages)
+Status: ✅ PASSED | Tester: Angel UM | Date: 2026-05-14
+Test ID
+Test Case
+Expected Result
+Actual Result
+Status
+Evidence
+INT-01
+Default State
+Sidebar shows "Impressions" context
+Correct initial state
+✅ PASS
+Initial load screenshot
+INT-02
+Click Interaction
+Stage click triggers onStageClick handler
+Handler fires on all stages
+✅ PASS
+Console verification
+INT-03
+Sidebar Update
+Sidebar content updates for selected stage
+Title/Desc/Action update correctly
+✅ PASS
+Before/after screenshots
+Test Steps: Click each funnel stage → Verify sidebar content changes → Confirm no console errors
+
+3. Data Visualization Rendering
+Status: ✅ PASSED | Tester: Angel UM | Date: 2026-05-14
+Test ID
+Test Case
+Expected Result
+Actual Result
+Status
+Evidence
+VIS-01
+Top Metric Cards
+Large numbers format correctly (1,500,000 → "1.50M")
+All cards format properly
+✅ PASS
+Screenshot
+VIS-02
+Funnel Chart
+Recharts FunnelChart renders with data
+Chart displays correctly
+✅ PASS
+Screenshot
+VIS-03
+Cohort Comparison
+Multi-series line/bar chart renders
+Chart renders without errors
+✅ PASS
+Screenshot
+VIS-04
+Platform Split
+Pie/donut shows correct % split
+Accurate platform percentages
+✅ PASS
+Screenshot
+
+4. End-to-End Test Verification
+Status: ✅ PASSED | Tester: Angel UM | Date: 2026-05-14
+Test ID
+Test Case
+Expected Result
+Actual Result
+Status
+Evidence
+E2E-01
+Selenium Headless
+Chrome driver boots successfully
+Driver launched without errors
+✅ PASS
+Test logs
+E2E-02
+Title Assertion
+Page title "Creator Distribution Funnel" present
+Title verified
+✅ PASS
+Test report
+E2E-03
+Component Assertion
+Funnel section + recharts-wrapper present
+Both elements found
+✅ PASS
+Test report
+
+Defect Summary
+ID
+Severity
+Description
+Status
+Owner
+None
+-
+No defects found
+-
+-
+
+UAT APPROVAL
+All acceptance criteria met. Dashboard ready for production deployment.
+Overall Status: ✅ PASSEDRecommendation: Proceed to production deployment

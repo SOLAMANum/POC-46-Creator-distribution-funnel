@@ -16,7 +16,9 @@ import {
   BadgeDollarSign, 
   Activity,
   AlertCircle,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Info,
+  X
 } from "lucide-react";
 
 interface Crossing {
@@ -47,6 +49,8 @@ interface DashboardData {
 export function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [selectedId, setSelectedId] = useState<string>("laredo");
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -123,53 +127,92 @@ export function Dashboard() {
               <Filter size={16} />
               <span>Sectors: All Ports</span>
             </div>
+            <button 
+              onClick={() => setIsInfoOpen(true)}
+              className="flex items-center gap-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 hover:border-blue-500/40 px-4 py-2 rounded-lg text-sm transition-all cursor-pointer font-medium"
+            >
+              <Info size={16} />
+              <span>Developer Signature</span>
+            </button>
           </div>
         </header>
 
 
 
-        {/* 70/30 Layout Split */}
-        <div className="flex flex-col lg:flex-row gap-6">
+        {/* Main Dashboard Layout */}
+        <div className="flex flex-col gap-6">
           
-          {/* Main Content Area (70%) */}
-          <div className="w-full lg:w-[70%] flex flex-col gap-6">
-            
-            {/* Interactive Border Map */}
+          {/* Expanded 100% Full Width Map/Visualization Stage */}
+          <div className="w-full">
             <BorderMap 
               crossings={data.crossings} 
               selectedId={selectedId} 
-              onSelectCrossing={setSelectedId} 
+              onSelectCrossing={(id) => {
+                setSelectedId(id);
+                setIsPanelOpen(true);
+              }} 
             />
-
-            {/* Crossing Compare Engine */}
-            <CrossingCompare crossings={data.crossings} />
-
-            {/* Global Commodity & Historical split */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              {/* Commodity Flows */}
-              <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl">
-                <div>
-                  <h2 className="text-lg font-semibold text-white">Global Commodity Flows</h2>
-                  <p className="text-xs text-gray-400 mt-1">Aggregated monetary trade volume split by commodity type.</p>
-                </div>
-                <CommodityFlows data={data.globalCommodities} />
-              </div>
-
-              {/* Historical Trends */}
-              <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl">
-                <div>
-                  <h2 className="text-lg font-semibold text-white">7-Day Transit Trends</h2>
-                  <p className="text-xs text-gray-400 mt-1">Historical correlation between flow throughput and average wait delays.</p>
-                </div>
-                <HistoricalTrends data={data.historicalTrends} />
-              </div>
-
-            </div>
           </div>
 
-          {/* Sidebar Content Area (30%) */}
-          <div className="w-full lg:w-[30%] flex flex-col gap-6">
+          {/* Crossing Compare Engine */}
+          <div className="w-full">
+            <CrossingCompare crossings={data.crossings} />
+          </div>
+
+          {/* Global Commodity & Historical split */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Commodity Flows */}
+            <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl">
+              <div>
+                <h2 className="text-lg font-semibold text-white">Global Commodity Flows</h2>
+                <p className="text-xs text-gray-400 mt-1">Aggregated monetary trade volume split by commodity type.</p>
+              </div>
+              <CommodityFlows data={data.globalCommodities} />
+            </div>
+
+            {/* Historical Trends */}
+            <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl">
+              <div>
+                <h2 className="text-lg font-semibold text-white">7-Day Transit Trends</h2>
+                <p className="text-xs text-gray-400 mt-1">Historical correlation between flow throughput and average wait delays.</p>
+              </div>
+              <HistoricalTrends data={data.historicalTrends} />
+            </div>
+
+          </div>
+        </div>
+
+        {/* Dynamic Slide-over Intelligence Panel (Backdrop Overlay) */}
+        {isPanelOpen && (
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300"
+            onClick={() => setIsPanelOpen(false)}
+          />
+        )}
+
+        {/* Intelligence Panel Slide-over */}
+        <div 
+          className={`fixed inset-y-0 right-0 w-full sm:w-[450px] bg-gradient-to-b from-[#0f172a] to-[#030712] border-l border-gray-800/80 shadow-2xl z-50 transform transition-transform duration-500 ease-out flex flex-col ${
+            isPanelOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          {/* Panel Header */}
+          <div className="flex justify-between items-center px-6 py-5 border-b border-gray-800/60 bg-[#070b15]/60 backdrop-blur-md sticky top-0 z-10">
+            <div>
+              <h2 className="text-lg font-bold text-white tracking-wide">Intelligence Command</h2>
+              <p className="text-xs text-gray-400 mt-0.5">Real-time crossing analytics & metrics</p>
+            </div>
+            <button 
+              onClick={() => setIsPanelOpen(false)}
+              className="text-gray-400 hover:text-white transition-colors p-2 bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-xl cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Panel Content Area (Scrollable) */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-gray-800">
             
             {/* Global Metrics */}
             <div className="flex flex-col gap-4">
@@ -198,8 +241,8 @@ export function Dashboard() {
             
             {/* Contextual Selected Crossing Sidebar */}
             {selectedCrossing && (
-              <div className="bg-gradient-to-b from-[#111827] to-[#0a0f1a] border border-blue-900/30 p-6 rounded-2xl shadow-xl flex flex-col h-full">
-                <div className="flex items-center gap-2 mb-4 text-blue-400 border-b border-gray-800/80 pb-3">
+              <div className="bg-gradient-to-b from-[#111827] to-[#0a0f1a] border border-blue-900/30 p-6 rounded-2xl shadow-xl flex flex-col">
+                <div className="flex items-center gap-2 mb-4 text-blue-400 border-b border-gray-850/80 pb-3">
                   <Activity size={20} />
                   <h2 className="text-xs font-bold uppercase tracking-wider">Port Specification</h2>
                 </div>
@@ -278,7 +321,10 @@ export function Dashboard() {
                   .map((crossing) => (
                     <div 
                       key={crossing.id}
-                      onClick={() => setSelectedId(crossing.id)}
+                      onClick={() => {
+                        setSelectedId(crossing.id);
+                        setIsPanelOpen(true);
+                      }}
                       className={`flex items-center justify-between p-3 rounded-xl border border-gray-800 bg-gray-900/40 hover:border-gray-700 transition-colors cursor-pointer ${selectedId === crossing.id ? "border-blue-500/50 bg-blue-950/10" : ""}`}
                     >
                       <div className="flex items-center gap-2.5">
@@ -418,7 +464,7 @@ export function Dashboard() {
               <div className="bg-[#111827]/40 border border-gray-800 p-4 rounded-xl space-y-3">
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-400 font-medium">Architect:</span>
-                  <span className="text-white font-bold">Antigravity AI & Angel UM</span>
+                  <span className="text-white font-bold">Solaman UM</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-400 font-medium">Batch:</span>
@@ -457,6 +503,36 @@ function FloatingMetricCard({ title, value, icon }: FloatingMetricCardProps) {
       <div>
         <h4 className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">{title}</h4>
         <p className="text-xs font-bold text-white mt-0.5">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+interface MetricCardProps {
+  title: string;
+  value: string;
+  trend: string;
+  icon: React.ReactNode;
+  desc: string;
+}
+
+function MetricCard({ title, value, trend, icon, desc }: MetricCardProps) {
+  return (
+    <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl hover:border-gray-700 transition-all duration-300 group">
+      <div className="flex justify-between items-start">
+        <div className="space-y-2">
+          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block">{title}</span>
+          <span className="text-2xl font-bold text-white tracking-tight block">{value}</span>
+        </div>
+        <div className="p-3 bg-gray-900 border border-gray-800 rounded-xl group-hover:border-gray-700 transition-all duration-300">
+          {icon}
+        </div>
+      </div>
+      <div className="mt-4 flex items-center justify-between border-t border-gray-850 pt-3">
+        <span className="text-[11px] text-gray-500 line-clamp-1">{desc}</span>
+        <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full whitespace-nowrap">
+          {trend}
+        </span>
       </div>
     </div>
   );
