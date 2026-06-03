@@ -12,6 +12,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def read_root():
+    return {
+        "status": "online",
+        "service": "Border Crossing Trade & Logistics Analytics API",
+        "endpoints": {
+            "data": "/api/data",
+            "docs": "/docs"
+        }
+    }
+
 @app.get("/api/data")
 def get_border_data():
     totals = {
