@@ -34,7 +34,7 @@ async function capture() {
     console.log("Capturing comparison screenshot...");
     const screenshot = await driver.takeScreenshot();
     
-    const targetDir = path.join('C:\\Users\\LENOVO\\.gemini\\antigravity\\brain\\77b8300b-c625-4f95-934c-316a7d99cbdf');
+    const targetDir = path.join('C:\\Users\\LENOVO\\.gemini\\antigravity\\brain\\751d5fb6-9ed9-4a98-bd46-8170531dfd12');
     if (!fs.existsSync(targetDir)) {
       fs.mkdirSync(targetDir, { recursive: true });
     }
