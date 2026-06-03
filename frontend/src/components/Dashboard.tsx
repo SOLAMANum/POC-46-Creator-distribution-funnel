@@ -53,7 +53,7 @@ export function Dashboard() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const apiUrl = 'https://poc-46-creator-distribution-funnel-1.onrender.com';
     fetch(`${apiUrl}/api/data`)
       .then(res => res.json())
       .then((resData) => {
