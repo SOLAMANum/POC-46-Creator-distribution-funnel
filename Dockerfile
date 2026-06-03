@@ -19,7 +19,7 @@
 # Only copies lockfiles so this layer is re-used on every build
 # unless package.json / package-lock.json actually changes.
 # ─────────────────────────────────────────────────────────────
-FROM node:20-alpine AS frontend-deps
+FROM node:22-alpine AS frontend-deps
 
 # libc6-compat is needed for some native Node add-ons on Alpine
 RUN apk add --no-cache libc6-compat
@@ -38,7 +38,7 @@ RUN npm ci --prefer-offline
 # Accepts NEXT_PUBLIC_* at build time so they get baked into
 # the static bundle.  Never pass secrets here.
 # ─────────────────────────────────────────────────────────────
-FROM node:20-alpine AS frontend-builder
+FROM node:22-alpine AS frontend-builder
 
 WORKDIR /app/frontend
 
@@ -72,7 +72,7 @@ RUN npm run build
 # Lean production image — only the standalone output lands here.
 # Runs as a non-root user to limit blast radius if exploited.
 # ─────────────────────────────────────────────────────────────
-FROM node:20-alpine AS frontend-runner
+FROM node:22-alpine AS frontend-runner
 
 WORKDIR /app
 
