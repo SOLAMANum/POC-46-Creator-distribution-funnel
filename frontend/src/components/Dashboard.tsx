@@ -114,7 +114,7 @@ export function Dashboard() {
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-800 pb-6 gap-4">
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-emerald-500 bg-clip-text text-transparent">
-              Border Crossing Trade & Logistics Analytics
+              INFORCREON Intership [POC 46 Creator distribution funnel] - Border Crossing Trade &amp; Logistics Analytics
             </h1>
             <p className="text-gray-400 mt-2 max-w-2xl">
               Real-time monitor of port transit delays, commercial trade values, vehicle throughputs, 
