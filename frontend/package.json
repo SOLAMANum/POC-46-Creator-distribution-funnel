@@ -35,7 +35,7 @@
     "typescript": "^5"
   },
   "overrides": {
-    "glob": "11.0.3",
+    "glob": "13.0.6",
     "inflight": "^1.0.6"
   }
 }
