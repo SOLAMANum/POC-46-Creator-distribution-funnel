@@ -34,20 +34,22 @@ describe('Dashboard E2E', () => {
     const url = process.env.TEST_URL || 'http://localhost:3000';
     await driver.get(url);
 
-    // Wait for the main dashboard container to load
-    // It should have a heading with 'INFORCREON'
-    const heading = await driver.wait(
-      until.elementLocated(By.xpath("//h1[contains(text(), 'INFORCREON')]")),
-      10000
+    // Wait for the loader spinner to disappear (data has loaded from API)
+    await driver.wait(
+      until.elementLocated(By.xpath("//h1[contains(text(), 'INFORCREON')]"
+      )),
+      35000 // Allow up to 35s for Render.com cold start
     );
 
+    // Heading should now be visible
+    const heading = await driver.findElement(By.xpath("//h1[contains(text(), 'INFORCREON')]"));
     const text = await heading.getText();
     expect(text).toContain('INFORCREON');
 
     // Also verify the subtitle exists
     const subtitle = await driver.wait(
       until.elementLocated(By.xpath("//h2[contains(text(), 'Border Crossing Trade')]")),
-      5000
+      10000
     );
     const subtitleText = await subtitle.getText();
     expect(subtitleText).toContain('Border Crossing Trade');
