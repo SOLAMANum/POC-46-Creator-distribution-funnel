@@ -53,7 +53,7 @@ export function Dashboard() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   useEffect(() => {
-    const apiUrl = 'https://poc-46-creator-distribution-funnel-1.onrender.com';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://poc-46-creator-distribution-funnel-1.onrender.com';
     fetch(`${apiUrl}/api/data`)
       .then(res => res.json())
       .then((resData) => {
@@ -124,7 +124,7 @@ export function Dashboard() {
                 </h1>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 tracking-widest uppercase shadow-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
-                  intership
+                  internship
                 </span>
               </div>
               
@@ -428,7 +428,7 @@ export function Dashboard() {
                 </div>
                 <div className="flex justify-between items-center py-2.5 border-b border-gray-800/80">
                   <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Project Scope</span>
-                  <span className="text-sm font-medium text-gray-300">INFORCREON Intership [POC 46 Creator distribution funnel]</span>
+                  <span className="text-sm font-medium text-gray-300">INFORCREON Internship [POC 46 Creator distribution funnel]</span>
                 </div>
                 <div className="py-2.5">
                   <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Technology Stack</span>

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "INFORCREON Intership [POC 46 Creator distribution funnel]",
+  title: "INFORCREON Internship [POC 46 Creator distribution funnel]",
   description: "INFORCREON Internship - POC 46 Creator Distribution Funnel Analytics Dashboard",
 };
 
