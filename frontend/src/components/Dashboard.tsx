@@ -119,7 +119,7 @@ export function Dashboard() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-4xl md:text-5xl font-black tracking-wider bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent leading-none">
+                <h1 className="text-lg md:text-xl font-bold tracking-wider bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent leading-none">
                   INFORCREON
                 </h1>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 tracking-widest uppercase shadow-sm">
@@ -129,7 +129,7 @@ export function Dashboard() {
               </div>
               
               <div className="space-y-2">
-                <h2 className="text-xl md:text-2xl font-bold text-gray-200 tracking-wide">
+                <h2 className="text-3xl md:text-4xl font-black text-gray-200 tracking-wide leading-tight">
                   Border Crossing Trade
                 </h2>
                 <p className="text-gray-400 text-sm max-w-2xl leading-relaxed">
