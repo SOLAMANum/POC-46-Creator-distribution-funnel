@@ -410,7 +410,7 @@ export function Dashboard() {
                 </div>
                 <div className="flex justify-between items-center py-2.5 border-b border-gray-800/80">
                   <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Project Scope</span>
-                  <span className="text-sm font-medium text-gray-300">Creator Distribution Funnel</span>
+                  <span className="text-sm font-medium text-gray-300">INFORCREON Intership [POC 46 Creator distribution funnel]</span>
                 </div>
                 <div className="py-2.5">
                   <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Technology Stack</span>
