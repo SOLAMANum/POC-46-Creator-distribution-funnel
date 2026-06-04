@@ -35,14 +35,22 @@ describe('Dashboard E2E', () => {
     await driver.get(url);
 
     // Wait for the main dashboard container to load
-    // It should have a heading with 'Border Crossing Trade & Logistics Analytics'
+    // It should have a heading with 'INFORCREON'
     const heading = await driver.wait(
-      until.elementLocated(By.xpath("//h1[contains(text(), 'Border Crossing Trade & Logistics Analytics')]")),
+      until.elementLocated(By.xpath("//h1[contains(text(), 'INFORCREON')]")),
       10000
     );
 
     const text = await heading.getText();
-    expect(text).toContain('Border Crossing Trade & Logistics Analytics');
+    expect(text).toContain('INFORCREON');
+
+    // Also verify the subtitle exists
+    const subtitle = await driver.wait(
+      until.elementLocated(By.xpath("//h2[contains(text(), 'Border Crossing Trade')]")),
+      5000
+    );
+    const subtitleText = await subtitle.getText();
+    expect(subtitleText).toContain('Border Crossing Trade');
   });
 
   it('should have the Interactive Border Corridor Map and chart component rendered', async () => {

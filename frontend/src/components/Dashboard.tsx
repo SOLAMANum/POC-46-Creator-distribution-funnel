@@ -111,29 +111,47 @@ export function Dashboard() {
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Header section */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-800 pb-6 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-emerald-500 bg-clip-text text-transparent">
-              INFORCREON Intership [POC 46 Creator distribution funnel] - Border Crossing Trade &amp; Logistics Analytics
-            </h1>
-            <p className="text-gray-400 mt-2 max-w-2xl">
-              Real-time monitor of port transit delays, commercial trade values, vehicle throughputs, 
-              and commodity splits along key border crossings.
-            </p>
-          </div>
+        <header className="relative overflow-hidden rounded-2xl border border-gray-800/80 bg-gradient-to-br from-gray-950/80 via-slate-950/80 to-gray-950/80 p-6 md:p-8 shadow-2xl backdrop-blur-sm">
+          {/* Decorative background glows for premium look */}
+          <div className="absolute top-0 right-1/4 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 pointer-events-none" />
+          <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl translate-y-1/2 pointer-events-none" />
           
-          <div className="flex gap-3">
-            <div className="flex items-center gap-2 bg-gray-900 border border-gray-800 px-4 py-2 rounded-lg text-sm text-gray-300">
-              <Filter size={16} />
-              <span>Sectors: All Ports</span>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-4xl md:text-5xl font-black tracking-wider bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent leading-none">
+                  INFORCREON
+                </h1>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 tracking-widest uppercase shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+                  intership
+                </span>
+              </div>
+              
+              <div className="space-y-2">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-200 tracking-wide">
+                  Border Crossing Trade
+                </h2>
+                <p className="text-gray-400 text-sm max-w-2xl leading-relaxed">
+                  Real-time monitor of port transit delays, commercial trade values, vehicle throughputs, 
+                  and commodity splits along key border crossings.
+                </p>
+              </div>
             </div>
-            <button 
-              onClick={() => setIsInfoOpen(true)}
-              className="flex items-center gap-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 hover:border-blue-500/40 px-4 py-2 rounded-lg text-sm transition-all cursor-pointer font-medium"
-            >
-              <Info size={16} />
-              <span>Developer Signature</span>
-            </button>
+            
+            <div className="flex flex-wrap gap-3 shrink-0">
+              <div className="flex items-center gap-2 bg-gray-900/80 border border-gray-800 px-4 py-2.5 rounded-xl text-xs md:text-sm text-gray-300 backdrop-blur-sm">
+                <Filter size={14} className="text-blue-400" />
+                <span className="font-medium">Sectors: All Ports</span>
+              </div>
+              <button 
+                onClick={() => setIsInfoOpen(true)}
+                className="flex items-center gap-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 hover:border-blue-500/40 px-4 py-2.5 rounded-xl text-xs md:text-sm transition-all cursor-pointer font-semibold shadow-md shadow-blue-950/20 backdrop-blur-sm"
+              >
+                <Info size={14} />
+                <span>Developer Signature</span>
+              </button>
+            </div>
           </div>
         </header>
 
